@@ -2,7 +2,7 @@
 Here you will find the supporting code for my Bioenineering Final Year Project which is my last written coursework ever. I hope this code is helpful and that you might one day find inner peace as well.
 
 ## Overview
-This project was about modelling and analysing genetic circuits with biomolecular controllers in the context of cellular resources. The main idea for this repo is to introduce you to the ideas behind the model and to be able to play around with it in Julia. We will be using Pluto.jl which is an interactive environment like JuPyTer
+This project was about modelling and analysing genetic circuits with biomolecular controllers in the context of cellular resources. The main idea for this repo is to introduce you to the ideas behind the model and to be able to play around with it in Julia. We will be using Pluto.jl which is an interactive environment like Jupyter Notebooks but uses pure Julia files that you can also run in your favourite IDE (I use Visual Studio Code).
 
 3 main resources used in gene expression are analysed with mathematical and computational methods:
 | # | Resource               | Stage of Gene Expression | Analysis Method          |
@@ -35,4 +35,9 @@ This project was about modelling and analysing genetic circuits with biomolecula
 7. System Classification
 
 ## Quick Start Guide
-1. [Install Julia][https://julialang.org/downloads/]
+1. [Install Julia](https://julialang.org/downloads/)
+2. Open your command line
+'''
+> julia
+'''
+
