@@ -37,7 +37,9 @@ This project was about modelling and analysing genetic circuits with biomolecula
 ## Quick Start Guide
 1. [Install Julia](https://julialang.org/downloads/)
 2. Open your command line
-'''
-> julia
+
+'''julia
+julia> import Pluto
+julia> Pluto.run()
 '''
 
