@@ -9,6 +9,7 @@ This project was about modelling and analysing genetic circuits with biomolecula
 | 2 | Ribosomes              | Translation              | Sensitivity Analysis     |
 | 3 | Phosphate bonds (~ATP) | Both                     | Numerical Quantification |
 
+### Illustration of resource use in central dogma:
 <pre>
           Transcription         Translation  
                (TX)                 (TL)  
@@ -24,4 +25,9 @@ This project was about modelling and analysing genetic circuits with biomolecula
 
 ## Contents
 1. Mathematical Model Definition
-2. Node 
+2. Node Visualisation in Matrix Form
+3. Domain Specific Language (DSL)
+4. Simulation of Activation Cascade
+5. Resource Quantification
+6. Sensitivity Analysis
+7. System Classification
