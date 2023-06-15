@@ -48,4 +48,5 @@ julia> ]
 julia> import Pluto
 julia> Pluto.run()
 ```
+
 More info about Julia basics: https://sje30.github.io/catam-julia/intro/julia-manual.html
