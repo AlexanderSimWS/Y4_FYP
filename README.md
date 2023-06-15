@@ -10,12 +10,12 @@ This project was about modelling and analysing genetic circuits with biomolecula
                (TX)                 (TL)  
 +------------+       +------------+       +------------+  
 |            |       |            |       |            |  
-|  Gene, g   +--+--> |   mRNA, m  +--+--> | Protein, x |  
+|  Gene, **g**   +--+--> |   mRNA, **m**  +--+--> | Protein, **x** |  
 |            |  |    |            |  |    |            |  
 +------------+  |    +------------+  |    +------------+  
                 |                    |  
-              RNAP, p            Ribosome, r  
-              + ATP              + ATP  
+              RNAP, **p**            Ribosome, **r**  
+              + **ATP**              + **ATP**  
 </pre>
 
 ## Contents
