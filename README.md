@@ -35,4 +35,4 @@ This project was about modelling and analysing genetic circuits with biomolecula
 7. System Classification
 
 ## Quick Start Guide
-1. \href[Install Julia][https://julialang.org/downloads/]
+1. [Install Julia][https://julialang.org/downloads/]
