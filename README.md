@@ -1,5 +1,5 @@
 # Analysis and Design of Lean Biomolecular Controllers Repo
-Here you will find the supporting code for my Bioenineering Final Year Project which is my last written coursework ever. I hope this code is helpful and that you might one day find inner peace as well.
+Here you will find the supporting code for my Bioengineering Final Year Project which is my last written coursework ever. I hope this code is helpful and that you might one day attain this level of happiness as well.
 
 ## Overview
 This project was about modelling and analysing genetic circuits with biomolecular controllers in the context of cellular resources. The main idea for this repo is to introduce you to the ideas behind the model and to be able to play around with it in Julia. We will be using Jupyter Notebooks that you can also run in your favourite IDE (I use Visual Studio Code).
@@ -28,7 +28,7 @@ This project was about modelling and analysing genetic circuits with biomolecula
 ## Contents
 1. Mathematical Model Definition
 2. Node Visualisation in Matrix Form
-3. Domain Specific Language (DSL)
+3. Domain Specific Language (DSL) Showcase
 4. Simulation of Activation Cascade
 5. Resource Quantification
 6. Sensitivity Analysis
