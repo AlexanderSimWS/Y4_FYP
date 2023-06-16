@@ -1,6 +1,6 @@
-include("nodes.jl")
+include("node_system.jl")
 
-# Macros
+# Functions to retrieve reaction data from DSL 
 function getnodereactions(lines::Expr)
     @assert lines.head == :block
     name::Symbol = :Z
@@ -8,6 +8,7 @@ function getnodereactions(lines::Expr)
     tl_rates::Vector{Float64} = []
     d::Real = 0
     init_g::Real = 0
+    counter = 1
     for line in lines.args
         if (typeof(line) == Expr)
             if line.args[1] == :~
@@ -34,15 +35,16 @@ function getnodereactions(lines::Expr)
                         push!(tl_rates, float(k_plus))
                         push!(tl_rates, float(k_min))
                     end
-                elseif (:∅ == rxn.args[2]) && (:m == rxn.args[1])
+                elseif (:∅ in rxn.args) 
                     d = rates.args[1].args[2]
                 elseif (rxn.head == :-->) && (length(rxn.args[2].args) == 4)
                     @assert rxn.args[2].args[1] == :+
                     @assert rates.args[1].head == Symbol("=")
                     kcat = rates.args[1].args[2]
-                    if (:C == rxn.args[1])
+                    if (counter == 1)
                         push!(tx_rates, float(kcat))
-                    elseif (:X == rxn.args[1])
+                        counter += 1
+                    elseif (counter == 2)
                         push!(tl_rates, float(kcat))
                     end
                 end
@@ -137,20 +139,47 @@ function getedges(lines::Expr)
     return ProtoEdge(1, input1_sym, output_sym, rates1[1], rates1[2], cooperativity1), ProtoEdge(2, input2_sym, output_sym, rates2[1], rates2[2], cooperativity2)
 end
 
-function createedge(nodes::Vector{Node}, edge::ProtoEdge)
-    input_node = getnode(edge.input_node, nodes)
-    output_node = getnode(edge.output_node, nodes)
+function createedge(nodes::Vector{Node}, edge::Prototype)
+    node_1 = 0
+    node_2 = 0
     type = edge.type
     rates::Vector{Float64} = [edge.k_plus, edge.k_min]
+    if typeof(edge) == ProtoEdge
+        node_1 = getnode(edge.input_node, nodes)
+        node_2 = getnode(edge.output_node, nodes)
+    elseif typeof(edge) == ProtoAnnEdge
+        node_1 = getnode(edge.node_1, nodes)
+        node_2 = getnode(edge.node_2, nodes)
+    end
     if type == 1
-        return activate(input_node, output_node, rates, edge.cooperativity)
+        return activate(node_1, node_2, rates, edge.cooperativity)
     elseif type == 2
-        return repress(input_node, output_node, rates, edge.cooperativity)
+        return repress(node_1, node_2, rates, edge.cooperativity)
+    elseif typeof(type) == String
+        return annhilation(node_1, node_2, type, rates)
     end
 end
 
-function edge(nodes::Vector{Node}, proto::ProtoEdge)
-    createedge(nodes, proto)
+function createindedge(nodes::Vector{Node}, edge::ProtoIndEdge)
+    tf_species = edge.tf_species
+    node = getnode(edge.node, nodes)
+    k_plus = edge.k_plus
+    k_min = edge.k_min
+    cooperativity = edge.cooperativiy
+    init_I = edge.init_I
+    if edge.type == 1
+        return tfactivation(tf_species, node, [k_plus, k_min], cooperativity, init_I)
+    elseif edge.type == 2
+        return tfinactivation(tf_species, node, [k_plus, k_min], cooperativity, init_I)
+    end
+end
+
+function edge(nodes::Vector{Node}, proto::Prototype)
+    if typeof(proto) == ProtoEdge || typeof(proto) == ProtoAnnEdge
+        createedge(nodes, proto)
+    elseif typeof(proto) == ProtoIndEdge
+        createindedge(nodes, proto)
+    end
 end
 
 function edges(nodes::Vector{Node}, inputedges::Tuple{ProtoEdge, ProtoEdge})
@@ -166,59 +195,176 @@ function edges(nodes::Vector{Node}, inputedges::Tuple{ProtoEdge, ProtoEdge})
     return edge1, edge2
 end
 
+function getannedge(lines::Expr)
+    @assert lines.head == :block
+    node_1 = :Z
+    node_2 = :Y
+    rates::Vector{Float64} = []
+    type::String = "Default"
+    for line in lines.args
+        if (typeof(line) == Expr)
+            if (line.args[1] == :-)
+                @assert line.args[2].args[3] == :X
+                node_1 = line.args[2].args[2]
+                node_2 = line.args[3]
+            elseif (line.args[1].head == :vect)
+                push!(rates,line.args[1].args[1].args[2])
+                push!(rates,line.args[1].args[2].args[2])
+                if ((occursin("m", string(line.args[2].args[1].args[2]))))
+                    type = "mRNA"
+                else
+                    type = "Protein"
+                end
+            end
+        end
+    end
+    return ProtoAnnEdge(node_1, node_2, type, rates[1], rates[2])
+end
+
+function getindedge(lines::Expr)
+    @assert lines.head == :block
+    tf_species = :Z
+    node = :Y
+    k_plus = 0
+    k_min = 0
+    cooperativity = 1
+    init_I = 0
+    type = 0
+    for line in lines.args
+        if typeof(line) == Expr
+            if line.head == :->
+                tf_species = line.args[1]
+                node = line.args[2].args[2].args[2]
+                init_I = line.args[2].args[2].args[3].args[2]
+                type = 1
+            elseif line.head == :call
+                tf_species = line.args[2].args[2]
+                node = line.args[2].args[3].args[2]
+                init_I = line.args[3].args[2]
+                type = 2
+            elseif line.args[1].head == :vect
+                k_plus = line.args[1].args[1].args[2]
+                k_min = line.args[1].args[2].args[2]
+                cooperativity = line.args[2].args[2].args[3].args[2]
+            end
+        end
+    end
+    return ProtoIndEdge(type, tf_species, node, float(k_plus), float(k_min), cooperativity, init_I)
+end
+
+# Macros to wrap functions
 macro createnode(rxns)
     getnodereactions(rxns)
 end
 
-node_1 = @createnode begin
-    A ~ g = 0.5
-    [k1⁺₁ = 4, k1⁻₁ = 1], g₁ + p <--> C₁
-    [k1θ₁ = 5], C --> g₁ + p + m₁
-    [k2⁺₁ = 4, k2⁻₁ = 1], m₁ + r <--> X₁
-    [k2θ₁ = 5], X₁ --> m₁ + r + x₁
-    [d₁ = 0.04], m₁ --> ∅
+macro activate(lines::Expr) 
+    getedgereaction(lines)
 end
 
-node_2 = @createnode begin
-    B ~ g = 0.5
-    [k1⁺₂ = 4, k1⁻₂ = 1], g₂ + p <--> C₂
-    [k1θ₂ = 5], C₂ --> g₂ + p + m₂
-    [k2⁺₂ = 4, k2⁻₂ = 1], m₂ + r <--> X₂
-    [k2θ₂ = 5], X₂ --> m₂ + r + x₂
-    [d₂ = 0.04], m₂ --> ∅
+macro repress(lines::Expr) 
+    getedgereaction(lines)
 end
 
-node_3 = @createnode begin
-    C ~ g = 0.5
-    [k1⁺₃ = 4, k1⁻₃ = 1], g₃ + p <--> C₃
-    [k1θ₃ = 5], C₃ --> g₃ + p + m₃
-    [k2⁺₃ = 4, k2⁻₃ = 1], m₃ + r <--> X₃
-    [k2θ₃ = 5], X₃ --> m₃ + r + x₃
-    [d₃ = 0.04], m₃ --> ∅
+macro combi(lines::Expr)
+    getedges(lines)
 end
 
-edge_1 = @activate begin
-    A -> B
-    [k'⁺₂ = 100, k'⁻₂ = 1], g₂ + 3x₁ <--> c₂
+macro annhilate(lines::Expr)
+    getannedge(lines)
 end
 
-edge_2 = @repress begin
-    B -| A
-    [k'⁺₂ = 100, k'⁻₂ = 1], g₁ + 3x₂ <--> c
+macro TFactivate(lines::Expr)
+    getindedge(lines)
 end
 
-edge_3 = @combi begin
-    A -> C, B -| C
-    [k⁺ₐ₃ = 100, k⁻ₐ₃ = 1], g₃ + x₁ <--> c₃
-    [k⁺ᵣ₃ = 100, k⁻ᵣ₃ = 1], g₃ + 3x₂ <--> c₃
+macro TFinactivate(lines::Expr)
+    getindedge(lines)
 end
 
-edge_4 = @annihilate begin
-    A -X- B
-    [k⁺₁₂ = 1000, k⁻₁₂ = 0.1], m₁ + m₂ --> m∅
-end
+# DSL Showcase (Actual Use)
+# node_1 = @createnode begin
+#     A ~ g = 0.5
+#     [k1⁺₁ = 4, k1⁻₁ = 1], g₁ + p <--> C₁
+#     [k1θ₁ = 5], C --> g₁ + p + m₁
+#     [k2⁺₁ = 4, k2⁻₁ = 1], m₁ + r <--> X₁
+#     [k2θ₁ = 5], X₁ --> m₁ + r + x₁
+#     [d₁ = 0.04], m₁ --> ∅
+# end
 
-edge_5 = @TFactivate begin
-    I₁ -> A
-    [κ⁺₁ = 1000, κ⁺₂ = 1], x⁰₁ + 2 I₁ <--> x⁺₁
-end
+# node_2 = @createnode begin
+#     B ~ g = 0.5
+#     [k1⁺₂ = 4, k1⁻₂ = 1], g₂ + p <--> C₂
+#     [k1θ₂ = 5], C₂ --> g₂ + p + m₂
+#     [k2⁺₂ = 4, k2⁻₂ = 1], m₂ + r <--> X₂
+#     [k2θ₂ = 5], X₂ --> m₂ + r + x₂
+#     [d₂ = 0.04], m₂ --> ∅
+# end
+
+# node_3 = @createnode begin
+#     C ~ g = 0.5
+#     [k1⁺₃ = 4, k1⁻₃ = 1], g₃ + p <--> C₃
+#     [k1θ₃ = 5], C₃ --> g₃ + p + m₃
+#     [k2⁺₃ = 4, k2⁻₃ = 1], m₃ + r <--> X₃
+#     [k2θ₃ = 5], X₃ --> m₃ + r + x₃
+#     [d₃ = 0.04], m₃ --> ∅
+# end
+
+# nodes = compilenodes(node_1, node_2, node_3)
+
+# edge1 = edge(nodes, @repress begin
+#     A -! B
+#     [k'⁺₂ = 100, k'⁻₂ = 1], g₂ + 3x₁ <--> c₂
+# end)
+
+# edge2_3 =  edges(nodes, @combi begin
+#     A -> C, B -! C
+#     [k⁺ₐ₃ = 100, k⁻ₐ₃ = 1], g₃ + x₁ <--> c₃
+#     [k⁺ᵣ₃ = 99, k⁻ᵣ₃ = 2], g₃ + 3x₂ <--> c⁰₃
+# end)
+
+# edge4 = edge(nodes, @annhilate begin
+#     A -X- B
+#     [k⁺₁₂ = 1000, k⁻₁₂ = 0.1], m₁ + m₂ --> m∅
+# end)
+
+# edge5 = edge(nodes, @TFinactivate begin
+#     I₁ -! A ~ I₁ = 30
+#     [κ⁺₁ = 1000, κ⁺₂ = 1], x⁰₁ + 2I₁ <--> x⁺₁
+# end)
+
+## DSL Showcase (Extract data)
+# @activate nodes (begin
+#     A -> B
+#     [k'⁺₂ = 100, k'⁻₂ = 1], g₂ + 3x₁ <--> c₂
+# end)
+
+# edge_1 = @activate begin
+#     A -> B
+#     [k'⁺₂ = 100, k'⁻₂ = 1], g₂ + 3x₁ <--> c₂
+# end
+
+# edge_2 = @repress begin
+#     B -| A
+#     [k'⁺₂ = 100, k'⁻₂ = 1], g₁ + 3x₂ <--> c
+# end
+
+# edge_3 = @combi begin
+#     A -> C, B -| C
+#     [k⁺ₐ₃ = 100, k⁻ₐ₃ = 1], g₃ + x₁ <--> c₃
+#     [k⁺ᵣ₃ = 100, k⁻ᵣ₃ = 1], g₃ + 3x₂ <--> c₃
+# end
+
+# edge_4 = @annihilate begin
+#     A -X- B
+#     [k⁺₁₂ = 1000, k⁻₁₂ = 0.1], m₁ + m₂ --> m∅
+# end
+
+# edge_5 = @TFactivate begin
+#     I₁ -> A
+#     [κ⁺₁ = 1000, κ⁺₂ = 1], x⁰₁ + 2 I₁ <--> x⁺₁
+# end
+
+# edge_5 = @TFinactivate begin
+#     I₁ -! A
+#     [κ⁺₁ = 1000, κ⁺₂ = 1], x⁰₁ + 2 I₁ <--> x⁺₁
+# end

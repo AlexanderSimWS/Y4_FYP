@@ -25,6 +25,34 @@ abstract type Link end
 abstract type TFLink <: Link end
 abstract type InducerLink <: Link end
 abstract type AnnhilationLink <: Link end
+abstract type Prototype end
+
+mutable struct ProtoEdge <: Prototype
+    type::Int
+    input_node::Symbol
+    output_node::Symbol
+    k_plus::Float64
+    k_min::Float64
+    cooperativity::Real
+end
+
+mutable struct ProtoAnnEdge <: Prototype
+    node_1::Symbol
+    node_2::Symbol
+    type::String
+    k_plus::Float64
+    k_min::Float64
+end
+
+mutable struct ProtoIndEdge <: Prototype
+    type::Int
+    tf_species::Symbol
+    node::Symbol
+    k_plus::Float64
+    k_min::Float64
+    cooperativiy::Real
+    init_I::Real
+end
 
 mutable struct Activation <: TFLink
     input_node::Node
