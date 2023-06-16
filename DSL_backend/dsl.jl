@@ -269,7 +269,7 @@ macro combi(lines::Expr)
     getedges(lines)
 end
 
-macro annhilate(lines::Expr)
+macro annihilate(lines::Expr)
     getannedge(lines)
 end
 
