@@ -52,6 +52,120 @@ function getnodereactions(lines::Expr)
     return createnode(name, tx_rates, tl_rates, d, init_g)
 end
 
+function getnode(sym::Symbol, nodes::Vector{Node})
+    for Node in nodes
+        if sym == Node.name
+            return Node
+        end
+    end
+end
+
+function getedgereaction(lines::Expr)
+    @assert lines.head == :block
+    type = 0
+    input_sym::Symbol = :Z
+    output_sym::Symbol = :Y
+    rxn_rates::Vector{Float64} = []
+    cooperativity::Real = 0
+    for line in lines.args
+        if (typeof(line) == Expr)
+            if (line.head == :->)
+                type = 1
+                input_sym = line.args[1]
+                output_sym = line.args[2].args[2]
+            elseif (line.head == :call) && (line.args[1] == :-)
+                type = 2
+                input_sym = line.args[2]
+                output_sym = line.args[3].args[2]
+            else
+                (rates, rxn) = line.args
+                @assert line.head == :tuple
+                @assert rates.head == :vect
+                push!(rxn_rates, float(rates.args[1].args[2].args[2]))
+                push!(rxn_rates, float(rates.args[2].args[2].args[2]))
+
+                @assert rxn.head == :call
+                for arg in rxn.args[2].args[3].args
+                    if typeof(arg) != Symbol
+                        cooperativity = arg
+                    end
+                end
+            end
+        end
+    end
+    return ProtoEdge(type, input_sym, output_sym, rxn_rates[1], rxn_rates[2], cooperativity)
+end
+
+function getedges(lines::Expr)
+    @assert lines.head == :block
+    input1_sym::Symbol = :Z
+    input2_sym::Symbol = :K
+    output_sym::Symbol = :Y
+    rates1::Vector{Float64} = []
+    rates2::Vector{Float64} = []
+    cooperativity1::Real = 1
+    cooperativity2::Real = 1
+    counter = 1
+
+    for line in lines.args
+        if (typeof(line) == Expr)
+            @assert line.head == :tuple
+            if line.args[1].head == :->
+                input1_sym = line.args[1].args[1]
+                output_sym = line.args[1].args[2].args[2]
+                input2_sym = lines.args[2].args[2].args[2]
+            elseif line.args[1].head == :vect
+                (rate1, rate2) = line.args[1].args 
+                if counter == 1
+                    push!(rates1, rate1.args[2])
+                    push!(rates1, rate2.args[2])
+                    if typeof(line.args[2].args[2].args[3]) == Expr
+                        cooperativity1 = (line.args[2].args[2].args[3].args[2])
+                    end
+                    counter +=1
+                elseif counter == 2
+                    push!(rates2, rate1.args[2])
+                    push!(rates2, rate2.args[2])
+                    if typeof(line.args[2].args[2].args[3]) == Expr
+                        cooperativity2 = (line.args[2].args[2].args[3].args[2])
+                    end
+                    counter +=1
+                end
+            end
+        end
+    end
+    return ProtoEdge(1, input1_sym, output_sym, rates1[1], rates1[2], cooperativity1), ProtoEdge(2, input2_sym, output_sym, rates2[1], rates2[2], cooperativity2)
+end
+
+function createedge(nodes::Vector{Node}, edge::ProtoEdge)
+    input_node = getnode(edge.input_node, nodes)
+    output_node = getnode(edge.output_node, nodes)
+    type = edge.type
+    rates::Vector{Float64} = [edge.k_plus, edge.k_min]
+    if type == 1
+        return activate(input_node, output_node, rates, edge.cooperativity)
+    elseif type == 2
+        return repress(input_node, output_node, rates, edge.cooperativity)
+    end
+end
+
+function edge(nodes::Vector{Node}, proto::ProtoEdge)
+    createedge(nodes, proto)
+end
+
+function edges(nodes::Vector{Node}, inputedges::Tuple{ProtoEdge, ProtoEdge})
+    edge1 = 0
+    edge2 = 0
+    for i = 1:2
+        if inputedges[i].type == 1
+            edge1 = createedge(nodes, inputedges[i])
+        elseif inputedges[i].type == 2
+            edge2 = createedge(nodes, inputedges[i])
+        end
+    end
+    return edge1, edge2
+end
+
 macro createnode(rxns)
     getnodereactions(rxns)
 end
