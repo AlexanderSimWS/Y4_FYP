@@ -16,7 +16,7 @@ Summary of results of framework:
 
 Simplified framework with is able to reflect experimental results for the dose response of an activation cascade from the paper, [Resource Competition Shapes the Response of Genetic Circuits](https://pubs.acs.org/doi/10.1021/acssynbio.6b00361) by Qian. *et al*. 
 
-See [4_activation_cascade_simulation](4_activation_cascade_simulation.ipynb).
+See [4_activation_cascade_simulation](4_activation_cascade_simulation.ipynb). It is important to not that the interest is in the underlying dynamics not the actual quantity.
 
 ![Simulation with Resource Conservation](simulation_plots/resource-conservation-simulation.png)
 ![Simulation without Resource Conservation](simulation_plots/no-resource-conservation-simulation.png)
