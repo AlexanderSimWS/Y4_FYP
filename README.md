@@ -11,6 +11,10 @@ This project was about modelling and analysing genetic circuits with biomolecula
 | 2 | Ribosomes              | Translation              | Sensitivity Analysis     |
 | 3 | Phosphate bonds (~ATP) | Both                     | Numerical Quantification |
 
+## Dose Response with/without Resource Conservation
+![Simulation with Resource Conservation](simulation_plots/resource-conservation-simulation.png)
+![Simulation without Resource Conservation](simulation_plots/no-resource-conservation-simulation.png)
+
 ### Illustration of resource use in central dogma:
 <pre>
           Transcription         Translation  
