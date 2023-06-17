@@ -12,7 +12,7 @@ This project was about modelling and analysing genetic circuits with biomolecula
 | 3 | Phosphate bonds (~ATP) | Both                     | Numerical Quantification |
 
 ## Dose Response with/without Resource Conservation
-Summary of results of framework: Simplified framework with is able to reflect experimental results for the dose response of an activation cascade from the paper: [Resource Competition Shapes the Response of Genetic Circuits](https://pubs.acs.org/doi/10.1021/acssynbio.6b00361) by Qian. *et al*.
+Summary of results of framework: Simplified framework with is able to reflect experimental results for the dose response of an activation cascade from the paper: [Resource Competition Shapes the Response of Genetic Circuits](https://pubs.acs.org/doi/10.1021/acssynbio.6b00361) by Qian. *et al*. See [4_activation_cascade_simulation](4_activation_cascade_simulation.ipynb).
 
 ![Simulation with Resource Conservation](simulation_plots/resource-conservation-simulation.png)
 ![Simulation without Resource Conservation](simulation_plots/no-resource-conservation-simulation.png)
