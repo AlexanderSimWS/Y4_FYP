@@ -33,7 +33,7 @@ This project was about modelling and analysing genetic circuits with biomolecula
 1. Mathematical Model Definition
 2. Node Visualisation in Matrix Form
 3. Domain Specific Language (DSL) Showcase
-4. Simulation of Activation Cascade
+4. Simulation of Activation Cascade ([Original Julia File](DSL_backend/original_cascade_simulation.jl))
 5. Resource Quantification
 6. Sensitivity Analysis
 7. System Classification
