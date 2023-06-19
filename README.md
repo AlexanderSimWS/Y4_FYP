@@ -1,5 +1,5 @@
 # Analysis and Design of Lean Biomolecular Controllers Repo
-Here you will find the supporting code for my Bioengineering Final Year Project which is my last written coursework ever. I hope this code is helpful and that you might one day attain this level of happiness as well.
+Here you will find the supporting code for my Bioengineering Final Year Project which is my last written coursework ever. The original code is in the [DSL_backend](DSL_backend) folder which contains the pure Julia files. I have formatted the background required and code in a readable way in the form of Jupyter notebooks for your viewing pleasure. I hope this code is helpful and that you might one day attain this level of happiness as well.
 
 ## Overview
 This project was about modelling and analysing genetic circuits with biomolecular controllers in the context of cellular resources. The main idea for this repo is to introduce you to the ideas behind the model and to be able to play around with it in Julia. We will be using Jupyter Notebooks that you can also run in your favourite IDE (I use Visual Studio Code).
@@ -16,7 +16,7 @@ Summary of results of framework:
 
 Simplified framework with is able to reflect experimental results for the dose response of an activation cascade from the paper, [Resource Competition Shapes the Response of Genetic Circuits](https://pubs.acs.org/doi/10.1021/acssynbio.6b00361) by Qian. *et al*. 
 
-See [4_activation_cascade_simulation](4_activation_cascade_simulation.ipynb). It is important to not that the interest is in the underlying dynamics not the actual quantity.
+See [4_activation_cascade_simulation](4_activation_cascade_simulation.ipynb). It is important to note that the interest is in the underlying dynamics not the actual quantity.
 
 ![Simulation with Resource Conservation](simulation_plots/resource-conservation-simulation.png)
 ![Simulation without Resource Conservation](simulation_plots/no-resource-conservation-simulation.png)
