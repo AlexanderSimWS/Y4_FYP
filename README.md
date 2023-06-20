@@ -42,7 +42,7 @@ See [4_activation_cascade_simulation](4_activation_cascade_simulation.ipynb). It
 4. Simulation of Activation Cascade ([Original Julia File](DSL_backend/original_cascade_simulation.jl))
 5. Resource Quantification
 6. Sensitivity Analysis
-7. System Classification
+7. DSL_backend
 
 ## Quick Start Guide
 1. [Install Julia](https://julialang.org/downloads/)
